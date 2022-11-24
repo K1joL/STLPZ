@@ -36,9 +36,9 @@ void NumRep(const string& input)
     }
 }
 
-double GetArithmMean(vector<int> *V)
+double GetArithmMean(vector<int> &V)
 {
-    return accumulate(V->begin(), V->end(), 0.0) / V->size();
+    return accumulate(V.begin(), V.end(), 0.0) / V.size();
 }
 
 void VectorFunc(int size1, int size2)
@@ -68,8 +68,8 @@ void VectorFunc(int size1, int size2)
         cout << V2[i] << " ";
     cout << endl;
 
-    cout << "The arithmetic mean vector 1: " << GetArithmMean(&V1) << endl;
-    cout << "The arithmetic mean vector 2: " << GetArithmMean(&V2) << endl;
+    cout << "The arithmetic mean vector 1: " << GetArithmMean(V1) << endl;
+    cout << "The arithmetic mean vector 2: " << GetArithmMean(V2) << endl;
 
     //Vector compare
     if (V1 != V2)
@@ -94,6 +94,7 @@ void VectorFunc(int size1, int size2)
     }
 }
 
+//Вывод матрицы
 void MatrOut(vector<vector<int>> &Matrix)
 {
     cout << "+---+";
@@ -114,18 +115,36 @@ void MatrOut(vector<vector<int>> &Matrix)
     cout << endl;
 }
 
-void ReachMatrix()
+//Поиск в глубину
+void DFS(vector<vector<int>> &Graph, int start, vector<bool> &visited)
 {
-    int N = 0;
-    //Number of elements
-    cin >> N; 
-    cin.ignore(256, '\n');
+    stack<int> stack;
+    stack.push(start);
+    visited[start] = 1;
 
-    vector< vector<int> > GraphMatr(N, vector<int>(N));
+    while (!stack.empty())
+    {
+        int v = stack.top();
+        stack.pop();
+
+        for (int i = 0; i < Graph[v].size(); i++)
+        {
+            if(Graph[v][i])
+                if (!visited[i])
+                {
+                    stack.push(i);
+                    visited[i] = 1;
+                }
+        }
+    }
+}
+
+void InitGraph(int N, vector< vector<int> > &Graph)
+{
     for (int i = 0; i < N; i++)
     {
         cout << i + 1 << " --> ";
-        
+
         string input;
         getline(cin, input);
 
@@ -134,41 +153,67 @@ void ReachMatrix()
 
         while (ss >> j)
         {
-            if (j) GraphMatr[i][j-1] = 1;
+            if (j) Graph[i][j - 1] = 1;
         }
         cout << endl;
     }
+}
 
+void ReachMatrix()
+{
+    int N = 0;
+    //Number of elements
+    cin >> N; 
+    cin.ignore(256, '\n'); //Считывание значение N до следующей строки
+
+    vector< vector<int> > GraphMatr(N, vector<int>(N));
+    InitGraph(N, GraphMatr);
+    //Вывод введенного графа
+    cout << "Graph: " << endl;
     MatrOut(GraphMatr);
 
-    for (int k = 0; k < N; k++)
-        for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
-                GraphMatr[i][j] = (GraphMatr[i][j] || (GraphMatr[i][k] && GraphMatr[k][j]));
+    //Вывод верхней границы
+    cout << "Reachability Matrix: " << endl;
+    cout << "+---+";
+    for (int k = 0; k < GraphMatr.size() - 1; k++)
+        cout << "---+";
+    cout << endl;
 
-    for (int i = 0; i < N; i++)
-        GraphMatr[i][i] = 1;
+    for(int i = 0; i < N; i++)
+    {
+        vector<bool> visited(N); //Обнуление вектора посещённых
+        DFS(GraphMatr, i, visited);
 
-    MatrOut(GraphMatr);
+        //Вывод строки резульата
+        for (int j = 0; j < visited.size(); j++)
+            cout << setw(3) << visited[j] << " ";
+        cout << endl;
+
+        //Вывод нижней границы
+        cout << "+---+";
+        for (int k = 0; k < GraphMatr.size() - 1; k++)
+            cout << "---+";
+        cout << endl;
+    }
 }
 
 int main()
 {
+    //----------map-------------
+
     string Input = "bob mom dod kok lol pop bob pop lol";
     NumRep(Input);
 
-    ////--------------------
-    
+    //----------vector----------
+        
     int size1 = 0, size2 = 0;
     cout << "Enter the sizes of Vectors: ";
     cin >> size1; cin >> size2;
     VectorFunc(size1, size2);
 
-    //--------------------
+    //----------stack-----------
 
     ReachMatrix();
-
-    //--------------------
 
     return 32;
 }
